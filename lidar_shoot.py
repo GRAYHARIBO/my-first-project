@@ -246,7 +246,7 @@ if (__name__ == '__main__'):
     ### 본 통신 끝 ####
     clientSock.send("Finish".encode("utf-8"))
 
-
+##ts
         
 
 
