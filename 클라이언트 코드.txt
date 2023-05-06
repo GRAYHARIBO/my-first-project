@@ -1,0 +1,99 @@
+###### 쏘기 #####
+## 라이다용 ####
+
+import numpy as np
+from socket import *
+from struct import pack, unpack, calcsize, iter_unpack
+from random import *
+
+##### initialize #####
+serverIP = "127.0.0.1" #본인 무선 LAN IPv4도 가능
+port = 8080
+clientSock = socket(AF_INET, SOCK_STREAM)
+clientSock.connect((serverIP,port))
+
+## 연결되면 자동으로 뜸 ###
+print("Connected to {}:{}".format(serverIP, port))
+
+## 서버로 메세지 한번 쏴주기 ##
+msg= input("Message put : ")
+clientSock.send(msg.encode("utf-8"))
+
+
+#=======서버 확인 끝=============본 통신 시작=======
+
+
+# 랜덤 데이터 만들기(Test용)
+radius=np.array([])
+theta=np.array([])
+x = bytearray() #전송할 데이터 타입
+
+for i in range(600):
+    radius = randrange(25600)   # ~25.6m
+    thet = randrange(360)   # 0~360도
+    if thet>180 :
+        theta = thet-360 
+    else :
+        theta = thet 
+
+    if (theta >= -42 and theta < 42) :
+        ang = int((theta+42)//0.35)
+        dis = int(radius//0.4)
+        x += bytearray(pack('HB', dis, ang))
+
+clientSock.send(x) # 전송
+
+###내 데이터 확인용###
+print(x)
+for y in iter_unpack('HB', x):
+    dis_conv = round(y[0]*0.4)
+    ang_conv = round((y[1]*0.35-42), 1)
+    print(dis_conv, ang_conv)
+        
+
+### 본 통신 끝 ####
+clientSock.send("Finish".encode("utf-8"))
+
+
+
+    
+
+
+
+
+
+
+
+#============의미 없는 Bundle===================
+
+# x = bytearray(pack('BB', 255, 254))
+# clientSock.send(x)
+# print(x)
+# y=unpack('BB', x)
+# print(y)
+
+# x = bytearray(pack('BB', 200, 11))
+# clientSock.send(x)
+
+# x = bytearray(pack('BB', 1, 0))
+# clientSock.send(x)
+
+
+# while i<10:
+#     r_pac=10+i
+#     theta_pac=32+i
+#     x = bytearray(pack('BBB', r_pac, theta_pac, r_pac))
+#     clientSock.send(x)
+#     i+=1
+
+# data=clientSock.recv(1024)
+# print("Received: {}".format(data.decode("utf-8")))
+
+
+
+# if (__name__ == '__main__'):
+#     env = L2tr.libLIDAR() ### Port Num in lidar2thetar_plt
+
+#     while True:
+        
+        

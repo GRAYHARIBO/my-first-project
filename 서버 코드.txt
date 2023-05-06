@@ -1,0 +1,56 @@
+# import Lidar.yolo_ds.detect as yolo
+from socket import *
+from struct import iter_unpack
+
+if (__name__ == '__main__'):
+
+    ##### initialize #####
+    serverSock = socket(AF_INET, SOCK_STREAM)
+    serverSock.bind(('127.0.0.1',8080)) #본인 무선 LAN IPv4도 가능
+    serverSock.listen(1)
+    connectionSock, addr = serverSock.accept()
+    print("접속 IP: {}".format(str(addr)))
+
+    ## 클라이언트로부터 메세지 한번 받기 ##
+    data = connectionSock.recv(1024)
+    print("IP{}의 message: {}".format(str(addr), data))
+
+
+    #=======서버 확인 끝=============본 통신 시작============
+
+    #데이터 수신
+    data = connectionSock.recv(1024)
+
+    #데이터 확인
+    for y in iter_unpack('HB', data):
+        dis_conv = round(y[0]*0.4)
+        ang_conv = round((y[1]*0.35-42), 1)
+        print(dis_conv, ang_conv)
+    
+    ### 본 통신 끝 ####
+    data = connectionSock.recv(1024)
+    print(data.decode("utf-8"))
+    print("Complete sending message")
+    
+
+
+
+
+
+    # data = connectionSock.recv(1024)
+    # if data == "Start" :
+    #     array=np.array([])
+    #     print("Hello from server")
+    # elif data :
+    #     array = np.append(array, data)
+    # elif data == "Finish" :
+    #     store = array.reshape(2,-1)
+    #     store[0] = store*4 #distance
+    #     store[1] = store*0.36 #angle
+    #     print("IP{}의 len(r): {}".format(str(addr), len(store[0])))
+    
+    # opt_yolo = yolo.parse_opt()
+    # for pix in yolo.shoot(opt_yolo):
+    #     print(pix)
+
+

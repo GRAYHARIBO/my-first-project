@@ -1,0 +1,103 @@
+###### 쏘기 #####
+## 라이다용 ####
+
+import numpy as np
+from socket import *
+from struct import pack, unpack, calcsize, iter_unpack
+from random import *
+
+##### initialize #####
+serverIP = "127.0.0.1" #본인 무선 LAN IPv4도 가능
+port = 8080
+clientSock = socket(AF_INET, SOCK_STREAM)
+clientSock.connect((serverIP,port))
+
+## 연결되면 자동으로 뜸 ###
+print("Connected to {}:{}".format(serverIP, port))
+
+## 서버로 메세지 한번 쏴주기 ##
+msg= input("Message put : ")
+clientSock.send(msg.encode("utf-8"))
+
+
+#=======서버 확인 끝=============본 통신 시작=======
+
+# 랜덤 데이터 만들기(Test용)
+radius=np.array([])
+theta=np.array([])
+x = bytearray() #전송할 데이터 타입
+
+for i in range(600):
+    radius = randrange(25600)   # ~25.6m
+    thet = randrange(360)   # 0~360도
+    if thet>180 :
+        theta = thet-360 
+    else :
+        theta = thet 
+
+    if (theta >= -42 and theta < 42) :
+        ang = int((theta+42)//0.35)
+        dis = int(radius//0.4)
+        x += bytearray(pack('HB', dis, ang))
+
+clientSock.send(x) # 전송
+
+###내 데이터 확인용###
+print(x)
+for y in iter_unpack('HB', x):
+    dis_conv = round(y[0]*0.4)
+    ang_conv = round((y[1]*0.35-42), 1)
+    print(dis_conv, ang_conv)
+        
+
+### 본 통신 끝 ####
+clientSock.send("Finish".encode("utf-8"))
+
+
+
+
+$$$
+start 65531 / 250
+그냥 0~64000 / 0~240
+cri 65533/ 251(Dang or 65532/ 251(Safe
+finish 65534/ 250
+
+
+30eh 40eh 57eh
+58mm 89mm 89mm
+
+
+$$$$$
+분해능 0.7
+-42~42 총 84도
+	=> 0.35로 나눠서 240개 범위
+256bit = 1 byte = B
+
+거리 ~25600mm
+분해능 0.4mm
+	=> 0.4로 나눠서 64000개 범위
+
+65536bit = 2byte = H
+
+318~360 0~42
+-42 ~ 42
+
+
+$$$$$$
+u 0~640 (0.01
+v 0~480  (0.0075
+거리 ~25600mm
+분해능 0.4mm
+	=> 0.4로 나눠서 64000개 범위
+
+
+
+@@@@@
+            if len(obstacle) <= 5:
+                criteria = 65533 #NOTHING DETECTED (LAND CHANGE X)
+                dis_detected = None
+                print(criteria)     
+            else:
+                criteria = 65532 #SOMETHING DETECTED (LANE CHANGE O)
+                dis_detected = np.min(obstacle[:,1])
+                print(criteria + ' (Distance: ', dis_detected, ')')
